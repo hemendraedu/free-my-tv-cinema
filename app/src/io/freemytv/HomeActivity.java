@@ -19,6 +19,13 @@ import android.widget.TextView;
 public class HomeActivity extends Activity {
     /** Opens All Apps (a remote's All Apps button, RemoteKeys). */
     static final String EXTRA_ALL_APPS = "io.freemytv.ALL_APPS";
+
+    /** The Apps key reaches us as ACTION_ALL_APPS (the system's way) or as our extra (RemoteKeys). */
+    private static boolean wantsAllApps(Intent intent) {
+        return intent != null && (intent.getBooleanExtra(EXTRA_ALL_APPS, false)
+                || Intent.ACTION_ALL_APPS.equals(intent.getAction()));
+    }
+
     private HomeView home;
     private int prefsVersion = Prefs.version;   // settings changed while we were away: start over
 
@@ -43,7 +50,7 @@ public class HomeActivity extends Activity {
         home = new HomeView(this);
         setContentView(home);
         getWindow().setBackgroundDrawable(null);
-        if (getIntent().getBooleanExtra(EXTRA_ALL_APPS, false)) home.showAllApps();
+        if (wantsAllApps(getIntent())) home.showAllApps();
         // At power-on "Live TV" (#346): the first time the home screen comes up after a full start, in Free My TV mode.
         if (HomeMode.noteHomeShown(this) && SystemClock.elapsedRealtime() < 240_000 && "live".equals(Prefs.powerOn())) {
             org.json.JSONObject s = HomeMode.state(this);
@@ -87,7 +94,7 @@ public class HomeActivity extends Activity {
     @Override protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         if (home == null) return;
-        if (intent.getBooleanExtra(EXTRA_ALL_APPS, false)) {
+        if (wantsAllApps(intent)) {
             home.showAllApps();
             return;
         }
@@ -118,6 +125,10 @@ public class HomeActivity extends Activity {
     @Override public boolean dispatchKeyEvent(KeyEvent event) {
         keyPressed = true;
         if (RemoteKeys.onKey(this, event)) return true;
+        if (event.getKeyCode() == KeyEvent.KEYCODE_ALL_APPS) {   // the Apps key, where no key service is on
+            if (event.getAction() == KeyEvent.ACTION_DOWN && home != null) home.showAllApps();
+            return true;
+        }
         if (home != null && home.onKey(event)) return true;
         return super.dispatchKeyEvent(event);
     }
