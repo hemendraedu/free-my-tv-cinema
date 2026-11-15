@@ -1,0 +1,5 @@
+Cinema background gallery
+
+aurora.png, desert.png and sahyadri-dusk.png were generated with OpenAI's image-generation tool for this project. They are imagined landscapes, not photographs of specific places, and contain no people, logos or personal data. The bundled source images are 1672 x 941 pixels; no claim of native 4K resolution is made.
+
+These generated images are distributed under the repository's MIT License.
